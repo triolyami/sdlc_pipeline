@@ -1,0 +1,48 @@
+# SDLC pipeline for building static websites.
+# States, transitions and limits live HERE — the engine is generic.
+
+name: site-sdlc
+start: plan
+workspace: site          # persistent project dir; agents run with cwd here
+
+limits:                  # max occurrences of a status per run before run_failed
+  fail: 3
+  reject: 3
+
+stages:
+  plan:
+    adapter: opencode
+    prompt: prompts/planner.md
+    "on":
+      done: implement
+      fail: END
+
+  implement:
+    adapter: devin
+    prompt: prompts/implementer.md
+    permission_mode: accept-edits
+    "on":
+      done: verify
+      fail: END
+
+  verify:
+    adapter: shell
+    cmd: "python3 scripts/verify_site.py {workspace}"
+    "on":
+      ok: review
+      fail: implement      # back to implementer with the failure log
+
+  review:
+    adapter: opencode
+    prompt: prompts/reviewer.md
+    verdict: true          # parse VERDICT: APPROVE/REJECT from output
+    "on":
+      approve: deploy
+      reject: implement    # back to implementer with reviewer feedback
+
+  deploy:
+    adapter: human
+    then: "rsync -a --delete {workspace}/ deployed/ 2>/dev/null || cp -r {workspace}/. deployed/"
+    "on":
+      approve: END
+      reject: END          # human declined → run ends as aborted
