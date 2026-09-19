@@ -72,6 +72,8 @@ def run(repo_root: Path, task: str, run_id: str | None = None,
                          f"for status {result.status!r}")
                 return 2
 
+            log.emit("transition", stage=state, status=result.status, to=nxt)
+
             # feedback flows only into a stage we're revisiting
             feedback = (result.feedback or result.output) if rounds[nxt] else None
             outcome = {"approve": "completed", "done": "completed",

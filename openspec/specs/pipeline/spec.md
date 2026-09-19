@@ -43,8 +43,11 @@ know which binary executes them.
 ### The system SHALL persist all run state as events
 
 Every stage transition SHALL append a JSON object to
-`runs/<run_id>/events.jsonl`. The log SHALL be sufficient to resume an
-interrupted run (`--resume <run_id>`) and to replay a run for visualization.
+`runs/<run_id>/events.jsonl`, including an explicit `transition` record
+(`{from, status, to}`) for each edge taken. The definition SHALL also expose
+the full declared edge list (`Pipeline.transitions`) for validation and
+visualization. The log SHALL be sufficient to resume an interrupted run
+(`--resume <run_id>`) and to replay a run for visualization.
 
 ### The verify stage SHALL be deterministic
 

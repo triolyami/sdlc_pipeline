@@ -29,6 +29,13 @@ class Pipeline:
     limits: dict
     stages: dict[str, Stage]
 
+    @property
+    def transitions(self) -> list[dict]:
+        """All declared edges: [{from, status, to}]. Static truth — the
+        engine's `transition` events record which of these were taken."""
+        return [{"from": s.name, "status": st, "to": nxt}
+                for s in self.stages.values() for st, nxt in s.on.items()]
+
 
 def load(repo_root: Path, path: Path | None = None) -> Pipeline:
     path = path or repo_root / "pipeline.yaml"

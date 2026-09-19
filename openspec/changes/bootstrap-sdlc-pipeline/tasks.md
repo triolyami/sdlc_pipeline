@@ -26,6 +26,7 @@
 - [x] 4.1 `events.py` — append-only `events.jsonl` writer
 - [x] 4.2 `store.py` — run dirs, rendered prompts, artifact copies
 - [x] 4.3 `engine.py` — state machine loop, edge resolution, limits, resume
+- [x] 4.5 `Pipeline.transitions` (declared edges) + `transition` event per hop
 - [x] 4.4 `cli.py` + `pipe` launcher — `run`, `--mock`, `--yes`, `--resume`, `list`
 
 ## 5. Domain plumbing (static sites)
@@ -35,8 +36,8 @@
 
 ## 6. Validation
 
-- [ ] 6.1 `pipe run --mock --yes` completes full cycle offline
-- [ ] 6.2 `pipe list` / `--resume` work
+- [x] 6.1 `pipe run --mock --yes` completes full cycle offline (incl. verify→implement loop via `PIPE_MOCK_FAIL_ONCE=1`)
+- [x] 6.2 `pipe list` / `--resume` work
 - [ ] 6.3 Real run with devin/opencode on a real task
 
 ## 7. Phase 2 (not this change)
