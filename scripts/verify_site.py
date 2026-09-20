@@ -56,7 +56,9 @@ def main() -> int:
         check(target.exists(), f"reference resolves: {ref}")
 
     for f in site.rglob("*"):
-        if f.is_file() and f.suffix in (".html", ".css", ".js", ".md", ".txt"):
+        hidden = any(p.startswith(".") for p in f.relative_to(site).parts)
+        if (f.is_file() and not hidden
+                and f.suffix in (".html", ".css", ".js", ".md", ".txt")):
             m = MARKERS.search(f.read_text(errors="replace"))
             check(not m, f"no unfinished markers in {f.name}"
                   + (f" (found {m.group(0)!r})" if m else ""))

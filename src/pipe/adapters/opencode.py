@@ -23,8 +23,12 @@ def run(ctx: StageCtx) -> StageResult:
         cmd = ["opencode", "run", prompt_text]
     r = subprocess.run(cmd, cwd=ctx.workspace, capture_output=True, text=True)
     out = tail(r.stdout + r.stderr)
+    store.sync_artifacts(ctx)
     if r.returncode != 0:
         return StageResult("fail", output=out, feedback=out)
+    if missing := store.missing_artifact(ctx):
+        return StageResult("fail", output=out,
+                           feedback=f"agent did not write {missing}")
     if ctx.stage.config.get("verdict"):
         m = _VERDICT.search(r.stdout)
         if not m:

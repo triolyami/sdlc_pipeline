@@ -3,16 +3,17 @@
 
 name: site-sdlc
 start: plan
-workspace: site          # persistent project dir; agents run with cwd here
+workspace: ../site       # persistent project dir (outside this repo); agents run with cwd here
 
 limits:                  # max occurrences of a status per run before run_failed
-  fail: 3
-  reject: 3
+  fail: 5
+  reject: 5
 
 stages:
   plan:
     adapter: opencode
     prompt: prompts/planner.md
+    artifact: plan.md          # stage fails unless the agent writes this
     "on":
       done: implement
       fail: END
@@ -20,7 +21,7 @@ stages:
   implement:
     adapter: devin
     prompt: prompts/implementer.md
-    permission_mode: accept-edits
+    permission_mode: dangerous
     "on":
       done: verify
       fail: END
@@ -39,10 +40,11 @@ stages:
     "on":
       approve: deploy
       reject: implement    # back to implementer with reviewer feedback
+      fail: review         # retry — e.g. missing VERDICT self-corrects
 
   deploy:
     adapter: human
-    then: "rsync -a --delete {workspace}/ deployed/ 2>/dev/null || cp -r {workspace}/. deployed/"
+    then: "python3 scripts/deploy_site.py {workspace} 8080"
     "on":
       approve: END
       reject: END          # human declined → run ends as aborted

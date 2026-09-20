@@ -1,6 +1,7 @@
 """Run directories, rendered prompts, artifacts."""
 from __future__ import annotations
 
+import shutil
 import time
 import uuid
 from pathlib import Path
@@ -21,17 +22,37 @@ def render_prompt(repo_root: Path, ctx) -> Path:
     context is injected mechanically.
     """
     body = (repo_root / ctx.stage.config["prompt"]).read_text()
+    ctx.artifacts_dir.mkdir(parents=True, exist_ok=True)
     ctx_block = [
         "---\n## Run context",
         f"- TASK: {ctx.task}",
         f"- WORKSPACE: {ctx.workspace}  (your working directory — the site project)",
-        f"- ARTIFACTS_DIR: {ctx.run_dir}  (write plan.md here)",
+        f"- ARTIFACTS_DIR: {ctx.artifacts_dir}  (inside your working directory — write plan.md here)",
     ]
     if ctx.feedback:
         ctx_block.append(f"- FEEDBACK from previous stage:\n{ctx.feedback}")
     out = ctx.run_dir / f"{ctx.stage.name}.prompt.md"
     out.write_text(body + "\n\n" + "\n".join(ctx_block) + "\n")
     return out
+
+
+def sync_artifacts(ctx) -> None:
+    """Archive the agent's artifacts (workspace/.pipeline/*) into run_dir."""
+    src = ctx.artifacts_dir
+    if not src.is_dir():
+        return
+    for f in src.iterdir():
+        if f.is_file():
+            shutil.copy2(f, ctx.run_dir / f.name)
+
+
+def missing_artifact(ctx) -> str | None:
+    """The stage's required artifact (config `artifact:`) if absent/empty."""
+    want = ctx.stage.config.get("artifact")
+    if not want:
+        return None
+    p = ctx.artifacts_dir / want
+    return None if p.is_file() and p.stat().st_size else want
 
 
 def feedback_message(ctx) -> str:

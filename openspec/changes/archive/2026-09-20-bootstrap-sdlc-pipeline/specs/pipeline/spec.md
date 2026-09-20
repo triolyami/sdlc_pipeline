@@ -1,4 +1,4 @@
-# Spec: pipeline
+# Spec Delta
 
 ## Purpose
 
@@ -6,7 +6,7 @@ Automated SDLC pipeline orchestration over headless coding CLIs: a
 declarative plan → implement → verify → review → deploy state machine,
 currently targeting static website generation but domain-agnostic by design.
 
-## Requirements
+## ADDED Requirements
 
 ### Requirement: Declarative pipeline definition
 
@@ -128,10 +128,3 @@ URL) in the stage event. On rejection the run SHALL end as `aborted`.
 - **WHEN** the pipeline runs without a TTY (dashboard/CI) and reaches deploy
 - **THEN** the adapter writes `approval_request.json` and polls for
   `approval.json`, proceeding on `{"approved": true}`
-
-## Non-goals
-
-- Parallel worker fan-out, DAG execution
-- Langfuse sinks (phase 2+)
-- iOS/xcodebuild domain
-- SSE live-push to the dashboard (the dashboard polls `events?after=N`)

@@ -22,6 +22,12 @@ class StageCtx:
     round: int             # how many times this stage ran this run
     auto_yes: bool
 
+    @property
+    def artifacts_dir(self) -> Path:
+        """Agent-facing artifacts dir — inside the workspace, since agents
+        sandboxed to cwd can't touch run_dir without permission prompts."""
+        return self.workspace / ".pipeline"
+
 
 @dataclass
 class StageResult:

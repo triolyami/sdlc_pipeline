@@ -15,9 +15,16 @@ from .adapters import REGISTRY, MOCK_OVERRIDES
 from .adapters.base import StageCtx, StageResult
 
 
+def _resolve_workspace(repo_root: Path, ws: str) -> Path:
+    p = Path(ws)
+    return (p if p.is_absolute() else repo_root / p).resolve()
+
+
 def run(repo_root: Path, task: str, run_id: str | None = None,
-        auto_yes: bool = False, mock: bool = False) -> int:
+        auto_yes: bool = False, mock: bool = False,
+        workspace: str | None = None) -> int:
     defn = definition.load(repo_root)
+    resumed = run_id is not None
 
     if run_id:
         run_dir = repo_root / "runs" / run_id
@@ -25,6 +32,9 @@ def run(repo_root: Path, task: str, run_id: str | None = None,
             print(f"no such run: {run_id}", file=sys.stderr)
             return 2
         task = (run_dir / "task.txt").read_text().strip()
+        ws_file = run_dir / "workspace.txt"
+        if ws_file.exists():
+            defn.workspace = _resolve_workspace(repo_root, ws_file.read_text().strip())
         recovered = _recover(defn, run_dir)
         if recovered is None:
             print(f"run {run_id} already finished", file=sys.stderr)
@@ -32,10 +42,15 @@ def run(repo_root: Path, task: str, run_id: str | None = None,
         state, counts, rounds, feedback = recovered
     else:
         run_id, run_dir = store.new_run(repo_root, task)
+        if workspace:
+            defn.workspace = _resolve_workspace(repo_root, workspace)
+            (run_dir / "workspace.txt").write_text(str(defn.workspace))
         state, counts, rounds, feedback = defn.start, Counter(), Counter(), None
 
+    defn.workspace.mkdir(parents=True, exist_ok=True)
+
     log = events.EventLog(run_dir)
-    log.emit("run_started", run_id=run_id, task=task, resumed=bool(run_id))
+    log.emit("run_started", run_id=run_id, task=task, resumed=resumed)
     outcome = "failed"
     try:
         while state != definition.END:

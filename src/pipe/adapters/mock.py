@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 
+from .. import store
 from .base import StageCtx, StageResult
 
 _SITE = {
@@ -35,12 +36,14 @@ _SITE = {
 def run(ctx: StageCtx) -> StageResult:
     name = ctx.stage.name
     if name == "plan":
-        plan = ctx.run_dir / "plan.md"
+        ctx.artifacts_dir.mkdir(parents=True, exist_ok=True)
+        plan = ctx.artifacts_dir / "plan.md"
         plan.write_text(
             f"# Plan\n\nBuild: {ctx.task}\n\n## Tasks\n"
             "- index.html — page structure\n- style.css — styles\n"
             "- script.js — interaction\n\n## Acceptance criteria\n"
             "- index.html parses; all local refs resolve; no TODO markers\n")
+        store.sync_artifacts(ctx)
         return StageResult("done", output="mock plan written")
     if name == "implement":
         for fname, content in _SITE.items():

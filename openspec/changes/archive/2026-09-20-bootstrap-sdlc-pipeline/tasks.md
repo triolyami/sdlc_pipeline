@@ -38,11 +38,12 @@
 
 - [x] 6.1 `pipe run --mock --yes` completes full cycle offline (incl. verify→implement loop via `PIPE_MOCK_FAIL_ONCE=1`)
 - [x] 6.2 `pipe list` / `--resume` work
-- [ ] 6.3 Real run with devin/opencode on a real task
+- [x] 6.3 Real run with devin/opencode on a real task
 
 ## 7. Phase 2 (not this change)
 
-- [ ] 7.1 `sinks/langfuse.py` — trace per run, span per stage, scores
-- [ ] 7.2 `sinks/sse.py` + `dashboard/server.py` + `index.html` — live DAG view
-- [ ] 7.3 Human gate via `approval.json` file instead of stdin
-- [ ] 7.4 Deep-link run → Langfuse trace from dashboard
+Parked per the proposal's Out-of-scope section — future changes, not tasks
+here. Of the original parking lot: the dashboard (REST + SPA, polling) and
+the `approval.json` file gate landed later without openspec coverage;
+`dashboard/` spec coverage is owed via a follow-up change. Still open:
+Langfuse sinks, SSE live-push, run→trace deep links.

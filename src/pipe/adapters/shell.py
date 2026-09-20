@@ -5,6 +5,7 @@ repo root. Exit code 0 -> ok, non-zero -> fail (output becomes feedback).
 """
 from __future__ import annotations
 
+import shlex
 import subprocess
 
 from .base import StageCtx, StageResult, tail
@@ -12,7 +13,9 @@ from .base import StageCtx, StageResult, tail
 
 def run(ctx: StageCtx) -> StageResult:
     cmd = ctx.stage.config["cmd"].format(
-        workspace=ctx.workspace, run_dir=ctx.run_dir, repo_root=ctx.repo_root)
+        workspace=shlex.quote(str(ctx.workspace)),
+        run_dir=shlex.quote(str(ctx.run_dir)),
+        repo_root=shlex.quote(str(ctx.repo_root)))
     r = subprocess.run(cmd, shell=True, cwd=ctx.repo_root,
                        capture_output=True, text=True)
     out = tail(r.stdout + r.stderr)
